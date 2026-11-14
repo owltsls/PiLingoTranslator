@@ -1,0 +1,49 @@
+π-Lingo 离线翻译（PiLingoTranslator）
+第三方组件归属与修改说明（NOTICE）
+
+本文件依据 Apache License 2.0 第 4(d) 条等要求，汇总随本软件分发的第三方组件的版权归属、来源与修改情况。各组件许可证原文归档于 licenses/ 目录。
+
+一、翻译模型
+
+Hy-MT2-1.8B-GGUF（分发文件：Hy-MT2-1.8B-Q4_K_M.gguf）
+版权所有 (C) 2026 Tencent。保留所有权利。
+来源：https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF
+许可证：Apache License 2.0，原文见 licenses/LICENSE-Hy-MT2.txt
+用途：本软件的本地离线翻译推理。
+修改说明：本软件分发的是上游发布的 Q4_K_M 量化 GGUF 版本，未对模型权重进行再训练或微调；如上游将量化视为修改，此处按 Apache-2.0 第 4(b) 条予以说明。
+
+二、OCR 识别模型
+
+PaddleOCR / PP-OCR 系列轻量识别模型（det / rec / cls）
+模型版权归百度（Baidu）所有。
+来源：https://github.com/PaddlePaddle/PaddleOCR
+许可证：Apache License 2.0，原文见 licenses/LICENSE-PaddleOCR.txt
+用途：仅提供 OCR 文字识别模型。
+修改说明：本软件使用官方发布的轻量移动端模型，并以 ONNX 形式随包分发；未修改模型结构与权重。
+
+三、OCR 推理引擎
+
+RapidOCR 1.2.3
+Copyright (c) 2021 RapidOCR Authors. All rights reserved.
+许可证：Apache License 2.0，原文见 licenses/LICENSE-RapidOCR.txt
+
+ONNX Runtime 1.31.1
+Copyright (c) Microsoft Corporation.
+许可证：MIT，原文见 licenses/LICENSE-ONNXRuntime.txt
+
+四、推理与界面库
+
+llama-cpp-python 0.3.36
+Copyright (c) 2023 Andrei Betlen.
+许可证：MIT，原文见 licenses/LICENSE-llama-cpp.txt
+
+PySide6 / Qt 6.12.0
+许可证：LGPL-3.0（本软件以动态链接方式使用），原文与动态链接声明见 licenses/LICENSE-Qt.txt
+
+五、商标声明
+
+“腾讯”“混元”“Hunyuan”“百度”“PaddleOCR”“Qt”等名称与标识为其各自权利人的商标或注册商标。本软件仅在事实性技术说明中使用上述名称，不表示任何隶属、赞助、认可或背书关系。
+
+六、无担保声明
+
+上述第三方组件均按其各自许可证“现状”提供，不附带任何明示或默示担保。各组件的适用法律、专利授权与责任限制条款以其许可证原文为准。

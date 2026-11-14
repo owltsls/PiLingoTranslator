@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>π-Lingo 离线翻译 · UI 重设计预览</title>
+<style>
+  :root{
+    --red:#c8402f; --red-bg:#fbeae7; --red-soft:#f6d9d3;
+    --teal:#0f9b8e; --teal-bg:#e4f4f1;
+    --gold:#b9760f; --gold-bg:#fbf0e2;
+    --rose:#a83b5c;
+    --ink:#241a18; --sub:#6b5d59; --sub2:#bcaea9; --line:#ece3df;
+    --card:#ffffff; --foot:#faf4f1;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:#efe7e3;
+       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+       color:var(--ink);}
+  .wrap{max-width:1280px;margin:0 auto;padding:26px 22px 70px;}
+
+  /* ---------- 顶部说明 ---------- */
+  .header h1{font-size:22px;margin:0 0 4px;font-weight:800;color:var(--red);}
+  .header p{margin:0;color:var(--sub);font-size:13px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:18px;}
+  .legend .lc{background:#fff;border:1px solid var(--line);border-radius:12px;
+              padding:13px 15px;flex:1;min-width:240px;}
+  .legend .lc b{display:block;font-size:13px;margin-bottom:4px;color:var(--ink);}
+  .legend .lc span{font-size:12px;color:var(--sub);line-height:1.6;}
+  .legend .num{display:inline-block;width:20px;height:20px;line-height:20px;text-align:center;
+               background:var(--red);color:#fff;border-radius:50%;font-size:12px;margin-right:6px;}
+
+  /* ---------- 窗体网格 ---------- */
+  .grid{display:flex;flex-wrap:wrap;gap:28px 30px;margin-top:28px;align-items:flex-start;}
+  .col{display:flex;flex-direction:column;}
+  .win{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);
+       border-radius:14px;box-shadow:0 10px 30px rgba(120,70,60,.13);}
+  .cap{font-size:12px;color:var(--sub);margin-top:9px;max-width:400px;line-height:1.5;}
+  .cap b{color:var(--ink);}
+
+  /* 左上角品牌标签：朱红半角圆角矩形，仅右边+底边可见（左上被窗体圆角裁掉）。
+     改用内容自适应尺寸 + 少量内边距，色块只比文字略大。 */
+  .tag{position:absolute;top:-14px;left:-14px;background:var(--red);border-radius:16px;
+       padding:18px 13px 8px 24px;display:flex;flex-direction:column;gap:2px;}
+  .tag .t{color:#fff;font-weight:700;font-size:13.5px;line-height:1.2;white-space:nowrap;}
+  .tag .s{color:#ffd9d2;font-size:10.5px;line-height:1.2;white-space:nowrap;}
+
+  .acts{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:3;}
+  .acts .b{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);
+           background:#fff;color:var(--sub);display:flex;align-items:center;
+           justify-content:center;font-size:13px;cursor:pointer;}
+  .acts .b:hover{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+  .acts .b.on{background:var(--gold-bg);color:var(--gold);border-color:var(--gold);}
+
+  .body{padding:54px 16px 12px 16px;display:flex;flex-direction:column;gap:8px;}
+  .row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .row .grow{flex:1;}
+
+  /* 统一的提示词风格 */
+  .hint{font-size:11px;color:var(--sub);display:inline-flex;align-items:center;gap:6px;
+        line-height:1.5;}
+  .hint::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);
+                flex:0 0 auto;}
+  .hint.gold{color:var(--gold);} .hint.gold::before{background:var(--gold);}
+  .hint.teal{color:var(--teal);} .hint.teal::before{background:var(--teal);}
+  .lang{font-size:11px;font-weight:700;color:var(--red);background:var(--red-bg);
+        border-radius:5px;padding:2px 8px;}
+
+  .pane{border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-size:12px;
+        background:#fff8f6;color:var(--ink);min-height:46px;white-space:pre-wrap;line-height:1.55;}
+  .pane.out{background:var(--teal-bg);color:var(--teal);border-color:#a9ddd3;}
+  .pane.ph{color:var(--sub2);background:#fff;font-style:normal;}
+  .link{font-size:11px;color:var(--red);cursor:pointer;border:0;background:none;
+        padding:2px;text-align:left;}
+  .link:hover{text-decoration:underline;}
+
+  .foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;
+        border-top:1px solid var(--line);background:var(--foot);font-size:10.5px;color:var(--sub);}
+  .foot .grow{flex:1;}
+
+  .btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;
+       padding:5px 11px;font-size:12px;cursor:pointer;}
+  .btn:hover{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+  .btn.pri{background:var(--red);border-color:var(--red);color:#fff;}
+  .btn.pri:hover{background:var(--red);color:#fff;}
+  .btn.ghost{border:0;background:none;color:var(--sub);}
+
+  /* 作者签名：与普通提示同级，可点击复制，附低调提示，无独立按钮 */
+  .sign{font-size:11px;color:var(--sub);cursor:pointer;display:inline-flex;align-items:center;
+        gap:4px;user-select:none;}
+  .sign:hover{color:var(--red);}
+  .sign .ck{font-size:10px;color:var(--sub2);}
+  .sign:hover .ck{color:var(--red);}
+
+  /* 设置 / 关于 对话框 */
+  .group{border:1px solid var(--line);border-radius:9px;padding:9px 11px 11px;margin-bottom:9px;}
+  .group > .gt{font-size:12.5px;font-weight:700;color:var(--red);margin-bottom:7px;}
+  .field{display:flex;align-items:center;justify-content:space-between;gap:10px;
+         font-size:12px;color:var(--ink);padding:4px 0;}
+  .field input,.field select{border:1px solid var(--line);border-radius:6px;padding:4px 7px;
+         font-size:12px;min-width:150px;color:var(--ink);}
+  .switch{width:38px;height:21px;border-radius:11px;background:var(--red);position:relative;
+          flex:0 0 auto;}
+  .switch i{position:absolute;top:2px;left:19px;width:17px;height:17px;border-radius:50%;
+           background:#fff;}
+  .switch.off{background:#d8cdc9;} .switch.off i{left:2px;}
+
+  /* 截图框选遮罩 */
+  .capwin{position:relative;overflow:hidden;border-radius:14px;
+          background:rgba(20,35,60,.80);border:1px solid rgba(255,255,255,.15);}
+  .sel{position:absolute;border:2px solid #2563eb;background:rgba(37,99,235,.10);}
+  .capwin .hint{position:absolute;top:14px;left:16px;color:#dfe9ff;}
+  .capwin .hint::before{background:#7aa2ff;}
+  .capwin .hint2{position:absolute;bottom:14px;left:16px;color:#aebfe0;font-size:11px;}
+
+  .toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+         background:rgba(36,26,24,.92);color:#fff;padding:9px 16px;border-radius:9px;
+         font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h1>π-Lingo 离线翻译 · UI 重设计预览（v2）</h1>
+    <p>统一左上角品牌标签 + 提示词风格一致化 + 作者签名降权可点击复制。点击任意「签名」即可复制微信号。</p>
+  </div>
+
+  <div class="legend">
+    <div class="lc"><b><span class="num">1</span>统一左上角品牌标签</b>
+      <span>每个窗体左上角是朱红「半角圆角矩形」标签（仅右边+底边可见），承载窗体名与一句副标题；原先分散在各处的提示框统一为一致的「红点 + 灰字」提示词风格。</span></div>
+    <div class="lc"><b><span class="num">2</span>作者签名降权</b>
+      <span>去掉粗体、色块与独立「复制微信号」按钮，签名回到与普通提示文字同级的灰字样式，不再抢眼。</span></div>
+    <div class="lc"><b><span class="num">3</span>点击即复制</b>
+      <span>签名本身可点击复制，旁边附低调的「点击复制」提示，无需任何单独按钮。</span></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- ============ W1 划词气泡 ============ -->
+    <div class="col">
+      <div class="win" style="width:380px;">
+        <div class="tag"><div class="t">划词翻译</div><div class="s">选中即译</div></div>
+        <div class="acts"><div class="b">📌</div><div class="b">⧉</div><div class="b">✕</div></div>
+        <div class="body">
+          <div class="row"><span class="lang">自动检测 → 中文</span>
+            <span class="hint grow">腾讯 Hy-MT2 · 本地推理</span></div>
+          <div class="pane out">离线翻译让每个被选中的短语都留在本机。</div>
+          <button class="link">▸ 查看原文</button>
+        </div>
+        <div class="foot">
+          <span class="hint">紧贴选区弹出 · 移开鼠标 / Esc 收起</span>
+          <span class="grow"></span>
+          <span class="hint teal">🔒 本地离线</span>
+        </div>
+      </div>
+      <div class="cap"><b>W1 划词气泡</b> · 鼠标静止常驻，移开 / Esc 收起。左上标签显示窗体名，提示词统一为红点灰字。</div>
+    </div>
+
+    <!-- ============ W2 图钉固定窗 ============ -->
+    <div class="col">
+      <div class="win" style="width:380px;">
+        <div class="tag"><div class="t">固定翻译</div><div class="s">已置顶 · 常显</div></div>
+        <div class="acts"><div class="b on">📌</div><div class="b">⧉</div><div class="b">✕</div></div>
+        <div class="body">
+          <div class="row"><span class="lang">English → 中文</span>
+            <span class="hint grow">腾讯 Hy-MT2 · 本地推理</span></div>
+          <div class="pane out">图钉固定窗在指针移开时也始终可见，便于对照长内容。</div>
+          <button class="link">▸ 查看原文</button>
+        </div>
+        <div class="foot">
+          <span class="hint gold">图钉固定 · 切换窗口与移动鼠标均不消失</span>
+          <span class="grow"></span>
+          <span class="hint teal">🔒 本地离线</span>
+        </div>
+      </div>
+      <div class="cap"><b>W2 图钉固定窗</b> · 由 W1 点 📌 转来，长期置顶。标签副标题为「已置顶 · 常显」。</div>
+    </div>
+
+    <!-- ============ W3 手动输入翻译窗（普通） ============ -->
+    <div class="col">
+      <div class="win" style="width:400px;">
+        <div class="tag"><div class="t">手动输入翻译</div><div class="s">独立窗口</div></div>
+        <div class="acts"><div class="b on">📌</div><div class="b">▢</div><div class="b">⚙</div><div class="b">✕</div></div>
+        <div class="body">
+          <div class="row"><span class="hint">完成 · 2 块 · 4200 ms · 本地离线</span></div>
+          <div class="row"><span class="lang">原文输入</span>
+            <span class="hint grow">可编辑 · 支持粘贴大段文本 · 超出可滚动 ↕</span></div>
+          <div class="pane">Offline translation keeps every selected phrase on this device.</div>
+          <div class="row"><span class="hint">42 字 · 单块上限 2000 字（超长自动分块，不截断）</span></div>
+          <div class="row"><span class="lang">中文译文</span>
+            <span class="hint grow teal">Hy-MT2 · 本地离线 · 逐块回填 ↕</span></div>
+          <div class="pane out">离线翻译让每个被选中的短语都留在本机。</div>
+        </div>
+        <div class="foot">
+          <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+          <span class="grow"></span>
+          <button class="btn">复制译文</button>
+        </div>
+      </div>
+      <div class="cap"><b>W3 手动输入翻译窗（普通）</b> · 套用设置页布局范式：运行状态置于上方、底部色块左侧为可点击签名、右下角为「复制译文」。上输入 / 下译文双栏。</div>
+    </div>
+
+    <!-- ============ W3 手动输入翻译窗（大窗/最大化） ============ -->
+    <div class="col">
+      <div class="win" style="width:760px;">
+        <div class="tag"><div class="t">手动输入翻译</div><div class="s">最大化</div></div>
+        <div class="acts"><div class="b on">📌</div><div class="b">❐</div><div class="b">⚙</div><div class="b">✕</div></div>
+        <div class="body">
+          <div class="row"><span class="hint">完成 · 3 块 · 6800 ms · 本地离线</span></div>
+          <div style="display:flex;gap:14px;">
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <div class="row"><span class="lang">原文输入</span>
+                <span class="hint grow">可编辑 · 支持粘贴大段文本 · 超出可滚动 ↕</span></div>
+              <div class="pane" style="min-height:300px;overflow:auto;">Paragraph 1
+Offline translation keeps every selected phrase on this device.
+
+Paragraph 2
+The local model handles the request without any network call.
+
+Paragraph 3
+Reviewers can verify this by capturing outbound traffic.
+
+（长文本：上下两栏各自独立滚动）</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:8px;">
+              <div class="row"><span class="lang">中文译文</span>
+                <span class="hint grow teal">Hy-MT2 · 本地离线 · 逐块回填 ↕</span></div>
+              <div class="pane out" style="min-height:300px;overflow:auto;">段落 1
+离线翻译让每个被选中的短语都留在本机。
+
+段落 2
+本地模型在没有任何网络请求的情况下完成翻译。
+
+段落 3
+评审者可以通过抓取出站流量来验证这一点。
+
+（译文区与原文区各自拥有独立滚动条）</div>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+          <span class="grow"></span>
+          <button class="btn">复制译文</button>
+        </div>
+      </div>
+      <div class="cap"><b>W3（大窗 / 最大化）</b> · 长文本双栏独立滚动，同样套用设置页布局：状态在上、签名在底部色块左侧、复制译文在右下角。</div>
+    </div>
+
+    <!-- ============ OCR 图片识别翻译窗 ============ -->
+    <div class="col">
+      <div class="win" style="width:600px;">
+        <div class="tag"><div class="t">图片识别翻译</div><div class="s">截图框选</div></div>
+        <div class="acts"><div class="b">▣</div><div class="b">⧉</div><div class="b">✕</div></div>
+        <div class="body">
+          <div class="row"><span class="hint teal grow">RapidOCR · 位图仅存内存，不落盘、不上传</span></div>
+          <div class="pane ph" style="text-align:center;color:var(--sub);">框选区域预览</div>
+          <div style="display:flex;gap:12px;">
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+              <span class="lang">识别原文（RapidOCR）</span>
+              <div class="pane">OFFLINE
+TRANSLATION
+keeps data on this device</div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:6px;">
+              <span class="lang">中文译文（Hy-MT2）</span>
+              <div class="pane out">离线翻译
+让数据留在本机</div>
+            </div>
+          </div>
+        </div>
+        <div class="foot">
+          <span class="hint teal">🔒 本地离线 · 框选不清可重选</span>
+        </div>
+      </div>
+      <div class="cap"><b>OCR 图片识别翻译窗</b> · 左识别原文 / 右中文译文。提示词统一为红点灰字（引擎提示用青点）。</div>
+    </div>
+
+    <!-- ============ 截图框选遮罩 ============ -->
+    <div class="col">
+      <div class="capwin" style="width:560px;height:320px;">
+        <div class="hint">拖动框选屏幕区域 · Esc 取消</div>
+        <div class="sel" style="left:120px;top:70px;width:320px;height:170px;"></div>
+        <div class="hint2">松开鼠标完成截取 · 位图仅存内存，不落盘、不上传</div>
+      </div>
+      <div class="cap"><b>截图框选遮罩</b> · 半透明全屏 + 蓝色选区框。左上角保留一句低调操作提示（与全软件提示词风格一致）。</div>
+    </div>
+
+    <!-- ============ 设置对话框 ============ -->
+    <div class="col">
+      <div class="win" style="width:540px;">
+        <div class="tag"><div class="t">设置</div><div class="s">偏好与本地引擎</div></div>
+        <div class="acts"><div class="b">✕</div></div>
+        <div class="body">
+          <div class="group"><div class="gt">划词与监听</div>
+            <div class="field"><span>启用划词 / 截图监听</span><span class="switch"><i></i></span></div>
+            <div class="field"><span>启用截图 OCR</span><span class="switch"><i></i></span></div>
+            <div class="field"><span>触发模式</span><select><option>选中即译（默认）</option></select></div>
+            <div class="field"><span>最小选中字数</span><input value="3"></div>
+          </div>
+          <div class="group"><div class="gt">全局快捷键</div>
+            <div class="field"><span>启用 / 停用划词</span><input value="Ctrl+Shift+T"></div>
+            <div class="field"><span>手动输入窗</span><input value="Ctrl+Shift+I"></div>
+            <div class="field"><span>截图 OCR</span><input value="Ctrl+Shift+O"></div>
+          </div>
+          <div class="group"><div class="gt">外观、窗口与本地引擎</div>
+            <div class="field"><span>主题</span><select><option>浅色</option></select></div>
+            <div class="field"><span>本地 GGUF 权重</span><input value="自动查找内置" style="min-width:170px;"></div>
+          </div>
+          <div class="hint">引擎状态：本地推理就绪 · 离线守卫已启用</div>
+        </div>
+        <div class="foot">
+          <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+          <span class="grow"></span>
+          <button class="btn">取消</button>
+          <button class="btn pri">保存设置</button>
+        </div>
+      </div>
+      <div class="cap"><b>设置对话框</b> · 底部作者签名改为灰字可点击，去掉了原来的「复制微信号」独立按钮。</div>
+    </div>
+
+    <!-- ============ 关于对话框 ============ -->
+    <div class="col">
+      <div class="win" style="width:540px;">
+        <div class="tag"><div class="t">关于</div><div class="s">π-Lingo</div></div>
+        <div class="acts"><div class="b">✕</div></div>
+        <div class="body">
+          <div style="font-size:17px;font-weight:800;color:var(--red);">π-Lingo 离线翻译 v1.7.3</div>
+          <div class="hint">100% 本地离线 · 零出站请求 · 无遥测</div>
+          <div class="pane" style="background:#fff;color:var(--ink);min-height:120px;">翻译引擎：腾讯开源 Hy-MT2-1.8B-Q4_K_M（进程内 CPU 推理，Apache-2.0）
+识别引擎：RapidOCR + ONNX Runtime + PP-OCRv5/v6 mobile（Apache-2.0 / MIT）
+目标语言：简体中文（固定）
+架构：PySide6 原生窗口，无浏览器、无 HTML 前端、无 HTTP 路由、无端口监听
+三类输入（划词 / OCR 识别原文 / 手动输入）共用同一个 Translator 单例
+
+许可证归档：Hy-MT2 Apache-2.0｜PaddleOCR Apache-2.0｜RapidOCR Apache-2.0｜ONNX Runtime MIT
+本程序不读取、不上传选中文本 / 剪贴板 / 截图 / 手动输入内容。</div>
+        </div>
+        <div class="foot">
+          <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+          <span class="grow"></span>
+          <button class="btn pri">关闭</button>
+        </div>
+      </div>
+      <div class="cap"><b>关于对话框</b> · 原玫瑰色色块签名改为普通灰字可点击，去掉了「复制微信号」按钮，标题保留产品名红字。</div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script>
+  var t = document.getElementById('toast');
+  function showToast(msg){
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(t._t); t._t = setTimeout(function(){ t.classList.remove('show'); }, 1400);
+  }
+  document.querySelectorAll('.sign').forEach(function(el){
+    el.addEventListener('click', function(){
+      var v = el.getAttribute('data-copy') || '';
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(v).then(function(){ showToast('已复制：' + v); },
+          function(){ showToast('已复制：' + v); });
+      } else { showToast('已复制：' + v); }
+    });
+  });
+</script>
+</body>
+</html>

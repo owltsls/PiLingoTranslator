@@ -1,0 +1,27 @@
+{
+  "ocr_enabled": true,
+  "hotkey_w3": "Ctrl+Shift+I",
+  "hotkey_ocr": "Ctrl+Shift+O",
+  "w3_visible": false,
+  "w3_always_on_top": true,
+  "w3_clear_on_close": false,
+  "w3_maximized": false,
+  "ocr_window_always_on_top": true,
+  "w3_geometry": {
+    "x": 0,
+    "y": 0,
+    "width": 420,
+    "height": 520
+  },
+  "max_block_chars": 2000,
+  "theme": "light",
+  "font_size": 13,
+  "model_path": "",
+  "ocr_model_dir": "",
+  "ocr_min_confidence": 0.5,
+  "source_language": "auto",
+  "autostart": false,
+  "history_enabled": false,
+  "network_guard": true,
+  "global_hotkeys": true
+}

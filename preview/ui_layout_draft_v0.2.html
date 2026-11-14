@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>π-Lingo 离线翻译 · UI 布局初稿 v0.2 · 修订 2（方案 A 已选定）</title>
+<style>
+:root{
+  --red:#c8402f; --red-bg:#fbeae7; --red-soft:#fff3f0;
+  --teal:#0f9b8e; --teal-bg:#e4f4f1;
+  --gold:#b9760f; --gold-bg:#fbf0e2;
+  --rose:#a83b5c; --ink:#241a18; --sub:#6b5d59; --sub2:#a89a95;
+  --line:#ece3df; --card:#ffffff; --foot:#faf4f1; --bg:#efe7e3;
+  --out:#e4f4f1; --out-line:#a9ddd3; --input:#fff8f6; --input-line:#f0ccc4;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);
+     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 22px 80px;}
+
+/* ---------- 页头 ---------- */
+.header h1{font-size:23px;margin:0 0 6px;font-weight:800;color:var(--red);}
+.header p{margin:0;color:var(--sub);font-size:13px;line-height:1.7;}
+.badge{display:inline-block;background:var(--red);color:#fff;border-radius:999px;
+       padding:3px 11px;font-size:11px;font-weight:700;vertical-align:middle;margin-left:8px;}
+.badge.ok{background:var(--teal);}
+.sec{margin-top:30px;}
+.sec > h2{font-size:16px;margin:0 0 12px;font-weight:800;display:flex;align-items:center;gap:8px;}
+.sec > h2::before{content:"";width:5px;height:17px;border-radius:3px;background:var(--red);}
+.note{font-size:12px;color:var(--sub);margin:-4px 0 14px;line-height:1.7;}
+
+/* ---------- 结论卡片 ---------- */
+.verdict{background:var(--card);border:1px solid var(--line);border-radius:14px;
+         padding:18px 20px;box-shadow:0 8px 24px rgba(120,70,60,.08);}
+.verdict .lead{font-size:15px;font-weight:800;color:var(--red);margin-bottom:8px;line-height:1.6;}
+.verdict p{font-size:12.5px;color:var(--sub);line-height:1.85;margin:0 0 8px;}
+.verdict b{color:var(--ink);}
+table{border-collapse:collapse;width:100%;font-size:12px;background:var(--card);}
+th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top;line-height:1.7;}
+th{background:var(--foot);color:var(--ink);font-weight:800;white-space:nowrap;}
+td .yes{color:var(--teal);font-weight:800;} td .no{color:var(--red);font-weight:800;}
+tr.rec td{background:var(--red-soft);}
+
+/* ---------- 规范卡 ---------- */
+.cards{display:flex;gap:14px;flex-wrap:wrap;}
+.cards .c{background:var(--card);border:1px solid var(--line);border-radius:12px;
+          padding:14px 16px;flex:1;min-width:250px;}
+.cards .c b{display:block;font-size:13px;margin-bottom:6px;color:var(--ink);}
+.cards .c span{font-size:12px;color:var(--sub);line-height:1.75;}
+.cards .c em{font-style:normal;color:var(--red);font-weight:700;}
+
+/* ---------- 折角标签对照 ---------- */
+.fold-demo{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start;}
+.fold-unit{width:230px;}
+.fold-box{position:relative;height:96px;background:var(--card);border:1px solid var(--line);
+          border-radius:14px;overflow:hidden;}
+.fold-box .tag{position:absolute;top:-14px;left:-14px;background:var(--red);
+               border-radius:16px;padding:18px 13px 8px 24px;
+               display:flex;flex-direction:column;gap:2px;}
+.fold-box .tag .t{color:#fff;font-weight:700;font-size:13.5px;line-height:1.2;white-space:nowrap;}
+.fold-box .tag .s{color:#ffd9d2;font-size:10.5px;line-height:1.2;white-space:nowrap;}
+.fold-box.wrong{border-radius:14px;}
+.fold-box.wrong .tag{top:0;left:0;border-radius:14px 16px 16px 0;padding:12px 13px 8px 16px;}
+.cap-s{font-size:11.5px;color:var(--sub);margin-top:8px;line-height:1.65;}
+.cap-s b{color:var(--ink);}
+
+/* ---------- 窗体栅格 ---------- */
+.grid{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start;}
+.col{display:flex;flex-direction:column;}
+.win{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--line);
+     border-radius:14px;box-shadow:0 10px 30px rgba(120,70,60,.13);}
+.cap{font-size:11.5px;color:var(--sub);margin-top:9px;max-width:420px;line-height:1.65;}
+.cap b{color:var(--ink);}
+
+/* 标签：严格按设计稿——负偏移 + 父级 overflow:hidden 圆角裁剪 */
+.tag{position:absolute;top:-14px;left:-14px;background:var(--red);border-radius:16px;
+     padding:18px 13px 8px 24px;display:flex;flex-direction:column;gap:2px;z-index:2;}
+.tag .t{color:#fff;font-weight:700;font-size:13.5px;line-height:1.2;white-space:nowrap;}
+.tag .s{color:#ffd9d2;font-size:10.5px;line-height:1.2;white-space:nowrap;}
+
+.acts{position:absolute;top:12px;right:12px;display:flex;gap:6px;z-index:3;}
+.acts .b{width:26px;height:26px;border-radius:7px;border:1px solid var(--line);
+         background:#fff;color:var(--sub);display:flex;align-items:center;
+         justify-content:center;font-size:13px;cursor:pointer;transition:.2s;}
+.acts .b:hover{background:var(--red-bg);color:var(--red);border-color:var(--red);}
+.acts .b.on{background:var(--gold-bg);color:var(--gold);border-color:var(--gold);}
+
+.body{padding:54px 16px 12px;display:flex;flex-direction:column;gap:8px;}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.row .grow{flex:1;min-width:0;}
+.hint{font-size:11px;color:var(--sub);display:inline-flex;align-items:center;gap:6px;line-height:1.5;}
+.hint::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--red);flex:0 0 auto;}
+.hint.gold{color:var(--gold);} .hint.gold::before{background:var(--gold);}
+.hint.teal{color:var(--teal);} .hint.teal::before{background:var(--teal);}
+.lang{font-size:11px;font-weight:700;color:var(--red);background:var(--red-bg);
+      border-radius:5px;padding:2px 8px;white-space:nowrap;}
+.pane{border:1px solid var(--input-line);border-radius:8px;padding:9px 11px;font-size:12px;
+      background:var(--input);color:var(--ink);min-height:46px;white-space:pre-wrap;line-height:1.55;}
+.pane.out{background:var(--out);color:var(--teal);border-color:var(--out-line);}
+.pane.ph{color:var(--sub2);background:#fff;font-style:normal;text-align:center;}
+.link{font-size:11px;color:var(--red);cursor:pointer;border:0;background:none;
+      padding:2px;text-align:left;transition:.2s;}
+.link:hover{text-decoration:underline;}
+
+/* 底栏：签名左、复制按钮统一右下角 */
+.foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;
+      border-top:1px solid var(--line);background:var(--foot);font-size:10.5px;color:var(--sub);}
+.foot .grow{flex:1;min-width:4px;}
+.sign{font-size:11px;color:var(--sub);cursor:pointer;display:inline-flex;align-items:center;
+      gap:4px;user-select:none;transition:color .2s;}
+.sign:hover{color:var(--red);} .sign .ck{font-size:10px;color:var(--sub2);}
+.sign:hover .ck{color:var(--red);}
+
+/* ===== 新的复制按钮：柔和胶囊 + 自然过渡 + 成功反馈 ===== */
+.copy{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;
+      border-radius:999px;border:1px solid rgba(200,64,47,.20);
+      background:linear-gradient(180deg,#ffffff,#fff8f6);
+      color:var(--red);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;
+      transition:background .24s ease,border-color .24s ease,box-shadow .24s ease,
+                 transform .18s ease,color .24s ease;}
+.copy svg{width:13px;height:13px;flex:0 0 auto;transition:transform .22s ease;}
+.copy:hover{background:var(--red-bg);border-color:rgba(200,64,47,.45);
+            box-shadow:0 4px 12px rgba(200,64,47,.13);transform:translateY(-1px);}
+.copy:hover svg{transform:translate(1px,-1px);}
+.copy:active{transform:translateY(0);box-shadow:0 2px 6px rgba(200,64,47,.10);}
+.copy.done{background:var(--teal-bg);border-color:rgba(15,155,142,.35);color:var(--teal);
+           box-shadow:none;transform:none;}
+
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:7px;
+     padding:5px 11px;font-size:12px;cursor:pointer;transition:.2s;}
+.btn:hover{background:var(--red-bg);border-color:var(--red);color:var(--red);}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff;}
+.btn.ghost{border:0;background:none;color:var(--sub);}
+.group{border:1px solid var(--line);border-radius:9px;padding:9px 11px 11px;margin-bottom:9px;}
+.group > .gt{font-size:12.5px;font-weight:700;color:var(--red);margin-bottom:7px;}
+.field{display:flex;align-items:center;justify-content:space-between;gap:10px;
+       font-size:12px;color:var(--ink);padding:4px 0;}
+.field input,.field select{border:1px solid var(--line);border-radius:6px;padding:4px 7px;
+       font-size:12px;min-width:130px;color:var(--sub);background:#fff;}
+.switch{width:38px;height:21px;border-radius:11px;background:var(--red);position:relative;flex:0 0 auto;}
+.switch i{position:absolute;top:2px;left:19px;width:17px;height:17px;border-radius:50%;background:#fff;}
+
+/* ===== 最大化相对布局演示：container query，无绝对坐标 ===== */
+.demo-wrap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;}
+.demo-bar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.demo-bar label{font-size:12px;color:var(--sub);}
+.demo-bar input[type=range]{width:260px;accent-color:var(--red);}
+.demo-bar .val{font-size:12px;color:var(--red);font-weight:700;min-width:74px;}
+.demo{container-type:inline-size;width:100%;resize:horizontal;overflow:hidden;}
+.demo .win{width:100%;}
+.panes{display:flex;flex-direction:column;gap:10px;}
+.panes > div{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.panes .pane{flex:1;min-height:150px;overflow:auto;}
+@container (min-width:680px){
+  .panes{flex-direction:row;}
+  .panes .pane{min-height:210px;}
+}
+.rel-tag{display:inline-block;background:var(--teal-bg);color:var(--teal);border-radius:5px;
+         padding:2px 8px;font-size:11px;font-weight:700;}
+
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+       background:rgba(36,26,24,.92);color:#fff;padding:9px 16px;border-radius:9px;
+       font-size:12.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>π-Lingo 离线翻译 · UI 布局初稿 v0.2<span class="badge">修订 2</span><span class="badge ok">方案 A 已选定</span></h1>
+    <p>已按你的决定收敛为 <strong>方案 A：窗口直接渲染 HTML/CSS，100% 复制设计稿</strong>。本版修订 2：设置页底栏移除多余的「关闭」，只保留一个「保存设置」，位置与「关于」页的主按钮完全一致，底栏结构两页统一。
+       正式 Qt 源码本轮仍未改动，先看预览效果。</p>
+  </div>
+
+  <!-- ============ 结论 ============ -->
+  <div class="sec">
+    <h2>一、已选定：方案 A · 100% 复制 HTML 设计稿</h2>
+    <div class="verdict">
+      <div class="lead">界面层改为「原生窗口 + 嵌入式 WebView 直接渲染 HTML/CSS」，本页即界面本体，视觉一致度 100%。</div>
+      <p><b>为什么只有它能做到 100%：</b>折角标签靠「负偏移 + 父级 <code>overflow:hidden</code> + 圆角裁剪」、提示圆点靠 <code>::before</code> 伪元素、按钮靠 <code>transition</code> 过渡、阴影靠 <code>box-shadow</code> 模糊——这些本来就是 CSS 能力，交给浏览器渲染即可原样呈现。Qt 样式表不支持伪元素 / 父级裁剪子控件 / CSS 过渡，圆角遮罩还与阴影效果互斥，字体渲染也不同，所以原生路线最多到 90–95%。</p>
+      <p><b>离线约束不变：</b>WebView 只加载本地打包的 HTML/CSS/JS，<b>不监听任何端口、不启动 HTTP 服务、不联网</b>；离线守卫仍阻断所有出站连接，选中文本 / 剪贴板 / 截图 / 手动输入全部不出本机。当初 v3.0 的「去 Web 化」针对的是 V0.3 的 <em>localhost + 浏览器 + HTTP 路由</em> 架构，与本地嵌入式渲染不是一回事。</p>
+    </div>
+    <table style="margin-top:14px;">
+      <tr><th style="width:150px;">落地项</th><th>做法</th><th>影响</th></tr>
+      <tr class="rec"><td><b>窗口外壳</b></td><td>Qt 继续负责无边框、圆角、置顶、托盘、全局热键、截图框选；每个窗体放一个 WebView 承载对应 HTML 片段</td><td>窗口行为与现在一致，用户无感</td></tr>
+      <tr><td><b>界面层</b></td><td>本页的 HTML/CSS 拆成窗体模板随包分发，改样式只改 CSS，新增控件不必重写 Qt 代码</td><td>折角、过渡动画、响应式布局一次到位，直接解决 (a)(b)</td></tr>
+      <tr><td><b>JS ↔ Python 桥接</b></td><td>翻译、复制、置顶、保存设置、拖动 / 最大化通过 QWebChannel 调用；界面不直接碰文件或网络</td><td>需新增一层约十几个接口，权限边界清晰</td></tr>
+      <tr><td><b>体积 / 内存</b></td><td>QtWebEngine 或系统 WebView2 运行时随包分发</td><td>安装包 1.16GB → 约 1.3GB；常驻内存 +100~200 MB</td></tr>
+      <tr><td><b>配套调整</b></td><td>离屏截图改用 WebView 抓图；PyInstaller spec 收集 HTML/CSS/JS 与 WebEngine 依赖；Inno 脚本同步</td><td>验收脚本需跟着改一遍</td></tr>
+    </table>
+    <p class="note" style="margin-top:10px;">下面所有窗体均按方案 A 的最终界面绘制：<b>本页看到什么，装到本机的窗口就是什么</b>。布局规范以本页为准。</p>
+  </div>
+
+  <!-- ============ 规范 1：折角标签 ============ -->
+  <div class="sec">
+    <h2>二、规范 1 · 左上角朱红标签：只保留底边 + 右侧边</h2>
+    <p class="note">实现原理：标签相对窗体左上角偏移 <code>top:-14px; left:-14px</code>，窗体 <code>overflow:hidden + border-radius:14px</code> 把标签左上部分裁掉，视觉上只剩右侧与底边两条弧边。文字区只写「板块名 + 注释词」，不出现任何内部代号。</p>
+    <div class="fold-demo">
+      <div class="fold-unit">
+        <div class="fold-box wrong"><div class="tag"><div class="t">划词翻译</div><div class="s">选中即译</div></div></div>
+        <div class="cap-s"><b style="color:var(--red)">✕ 当前程序效果</b>：标签贴在 (0,0)，左上仍是完整圆角块，看起来像一个独立色块，不是折角。</div>
+      </div>
+      <div class="fold-unit">
+        <div class="fold-box"><div class="tag"><div class="t">划词翻译</div><div class="s">选中即译</div></div></div>
+        <div class="cap-s"><b style="color:var(--teal)">✓ 目标效果（本初稿采用）</b>：左上被窗体圆角切掉，只显出右边与底边，色块只比文字略大。</div>
+      </div>
+      <div style="flex:1;min-width:280px;">
+        <table>
+          <tr><th>窗体</th><th>主标题</th><th>注释词</th></tr>
+          <tr><td>划词气泡</td><td>划词翻译</td><td>选中即译</td></tr>
+          <tr><td>图钉固定窗</td><td>固定翻译</td><td>已置顶 · 常显</td></tr>
+          <tr><td>手动输入窗（普通 / 大窗）</td><td>手动输入翻译</td><td>独立窗口 / 最大化</td></tr>
+          <tr><td>图片识别窗</td><td>图片识别翻译</td><td>截图框选</td></tr>
+          <tr><td>设置</td><td>设置</td><td>偏好与本地引擎</td></tr>
+          <tr><td>关于</td><td>关于</td><td>π-Lingo</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 规范 2：复制按钮 ============ -->
+  <div class="sec">
+    <h2>三、规范 2 · 复制按钮统一下沉到右下角</h2>
+    <div class="cards">
+      <div class="c"><b>位置唯一</b><span>所有需要复制的窗体，<em>只在底栏右下角</em>放一个「复制译文」。顶部按钮区只保留图钉 / 最大化 / 设置 / 关闭，不再出现复制图标。</span></div>
+      <div class="c"><b>质感自然过渡</b><span>由生硬的方形描边改为<em>柔和胶囊</em>：淡渐变底、20% 透明度细边、hover 时背景渐深 + 轻微上浮 + 柔和投影，图标同步位移；均用 0.2s 缓动过渡。</span></div>
+      <div class="c"><b>点击有反馈</b><span>复制成功后按钮短暂变为青绿色「已复制」并在 1.4 秒后淡回原状，避免用户不确定是否生效。<em>下方所有按钮都可以点一下试试。</em></span></div>
+      <div class="c"><b>签名不抢位置</b><span>底栏左侧仍是可点击复制微信号的灰字签名；右侧操作靠 <code>flex:1</code> spacer 顶到最右，窗口变宽时自动分开，不写死坐标。</span></div>
+      <div class="c"><b>底栏按钮统一规范</b><span>设置页与「关于」页底栏结构<em>完全一致</em>：左侧可点击签名 + <code>flex:1</code> 留白 + 右下角<em>唯一一个朱红主按钮</em>。设置页是「保存设置」、关于页是「关闭」；不再塞第二个按钮，也就不会出现换行错位。</span></div>
+    </div>
+  </div>
+
+  <!-- ============ 规范 3：相对定位 ============ -->
+  <div class="sec">
+    <h2>四、规范 3 · 最大化时控件不错位（相对定位演示）</h2>
+    <p class="note">下面的演示窗口宽度可以拖动调节：内部两栏用 <code>flex</code> + <code>container query</code> 自动从「上下堆叠」切到「左右并排」，底部签名与复制按钮始终贴住左右两端。<b>全程没有任何绝对像素坐标</b>，这正是要解决的最大化错位问题。请拖动滑块试试。</p>
+    <div class="demo-wrap">
+      <div class="demo-bar">
+        <label>窗口宽度</label>
+        <input id="slider" type="range" min="380" max="1040" value="420" step="10">
+        <span class="val" id="val">420 px</span>
+        <span class="rel-tag" id="mode">上下双栏</span>
+        <button class="btn" id="toMax">切到最大化</button>
+      </div>
+      <div class="demo" id="demo" style="max-width:420px;">
+        <div class="win">
+          <div class="tag"><div class="t">手动输入翻译</div><div class="s">最大化</div></div>
+          <div class="acts"><div class="b on">📌</div><div class="b">❐</div><div class="b">⚙</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="hint">完成 · 3 块 · 6800 ms · 本地离线</span></div>
+            <div class="panes">
+              <div>
+                <div class="row"><span class="lang">原文输入</span><span class="hint grow">可编辑 · 独立滚动</span></div>
+                <div class="pane">Paragraph 1
+Offline translation keeps every selected phrase on this device.
+
+Paragraph 2
+The local model handles the request without any network call.
+
+Paragraph 3
+Reviewers can verify this by capturing outbound traffic.</div>
+              </div>
+              <div>
+                <div class="row"><span class="lang">中文译文</span><span class="hint grow teal">本地离线 · 逐块回填</span></div>
+                <div class="pane out">段落 1
+离线翻译让每个被选中的短语都留在本机。
+
+段落 2
+本地模型在没有任何网络请求的情况下完成翻译。
+
+段落 3
+评审者可以通过抓取出站流量来验证这一点。</div>
+              </div>
+            </div>
+          </div>
+          <div class="foot">
+            <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+            <span class="grow"></span>
+            <button class="copy" data-copy="离线翻译让每个被选中的短语都留在本机。">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 全窗体初稿 ============ -->
+  <div class="sec">
+    <h2>五、全部窗体布局初稿（按新规范重排）</h2>
+    <p class="note">以下 7 个窗体统一：折角标签只留底边+右侧边、顶部无复制按钮、底栏右下角为新的胶囊复制按钮。</p>
+    <div class="grid">
+
+      <!-- 划词气泡 -->
+      <div class="col">
+        <div class="win" style="width:380px;">
+          <div class="tag"><div class="t">划词翻译</div><div class="s">选中即译</div></div>
+          <div class="acts"><div class="b">📌</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="lang">自动检测 → 中文</span><span class="hint grow">腾讯 Hy-MT2 · 本地推理</span></div>
+            <div class="pane out">离线翻译让每个被选中的短语都留在本机。</div>
+            <button class="link">查看原文</button>
+          </div>
+          <div class="foot">
+            <span class="hint">紧贴选区弹出 · Esc 收起</span><span class="grow"></span>
+            <button class="copy" data-copy="离线翻译让每个被选中的短语都留在本机。">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+        <div class="cap"><b>划词气泡</b> · 顶部只剩图钉与关闭；复制下沉到底栏右下角。</div>
+      </div>
+
+      <!-- 固定窗 -->
+      <div class="col">
+        <div class="win" style="width:380px;">
+          <div class="tag"><div class="t">固定翻译</div><div class="s">已置顶 · 常显</div></div>
+          <div class="acts"><div class="b on">📌</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="lang">English → 中文</span><span class="hint grow">腾讯 Hy-MT2 · 本地推理</span></div>
+            <div class="pane out">图钉固定窗在指针移开时也始终可见，便于对照长内容。</div>
+            <button class="link">查看原文</button>
+          </div>
+          <div class="foot">
+            <span class="hint gold">切换窗口与移动鼠标均不消失</span><span class="grow"></span>
+            <button class="copy" data-copy="图钉固定窗在指针移开时也始终可见，便于对照长内容。">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+        <div class="cap"><b>图钉固定窗</b> · 与划词气泡完全同构，只换标签副标题与底栏提示。</div>
+      </div>
+
+      <!-- 手动输入普通 -->
+      <div class="col">
+        <div class="win" style="width:420px;">
+          <div class="tag"><div class="t">手动输入翻译</div><div class="s">独立窗口</div></div>
+          <div class="acts"><div class="b on">📌</div><div class="b">□</div><div class="b">⚙</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="hint">完成 · 2 块 · 4200 ms · 本地离线</span></div>
+            <div class="row"><span class="lang">原文输入</span><span class="hint grow">可编辑 · 独立滚动</span></div>
+            <div class="pane">Offline translation keeps every selected phrase on this device.</div>
+            <div class="row"><span class="hint">42 字 · 单块上限 2000 字（超长自动分块）</span></div>
+            <div class="row" style="gap:8px;"><button class="btn ghost">清空</button><button class="btn ghost">长文本示例</button><span class="grow"></span></div>
+            <div class="row"><button class="btn pri" style="margin-left:auto;">翻译 Ctrl+Enter</button></div>
+            <div class="row"><span class="lang">中文译文</span><span class="hint grow teal">本地离线 · 逐块回填</span></div>
+            <div class="pane out">离线翻译让每个被选中的短语都留在本机。</div>
+          </div>
+          <div class="foot">
+            <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+            <span class="grow"></span>
+            <button class="copy" data-copy="离线翻译让每个被选中的短语都留在本机。">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+        <div class="cap"><b>手动输入窗（普通）</b> · 状态在内容区顶部；签名左下、复制右下。</div>
+      </div>
+
+      <!-- 手动输入最大化 -->
+      <div class="col">
+        <div class="win" style="width:620px;">
+          <div class="tag"><div class="t">手动输入翻译</div><div class="s">最大化</div></div>
+          <div class="acts"><div class="b on">📌</div><div class="b">■</div><div class="b">⚙</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="hint">完成 · 3 块 · 6800 ms · 本地离线</span></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px;">
+                <div class="row"><span class="lang">原文输入</span><span class="hint grow">独立滚动</span></div>
+                <div class="pane" style="min-height:150px;">Paragraph 1
+Offline translation keeps every selected phrase on this device.
+
+Paragraph 2
+The local model handles the request without any network call.</div>
+              </div>
+              <div style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:6px;">
+                <div class="row"><span class="lang">中文译文</span><span class="hint grow teal">逐块回填</span></div>
+                <div class="pane out" style="min-height:150px;">段落 1
+离线翻译让每个被选中的短语都留在本机。
+
+段落 2
+本地模型在没有任何网络请求的情况下完成翻译。</div>
+              </div>
+            </div>
+          </div>
+          <div class="foot">
+            <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+            <span class="grow"></span>
+            <button class="copy" data-copy="离线翻译让每个被选中的短语都留在本机。">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+        <div class="cap"><b>手动输入窗（最大化）</b> · 两栏按 <code>flex:1</code> 等分，宽度变化不产生错位；底栏两端自动吸附。</div>
+      </div>
+
+      <!-- OCR -->
+      <div class="col">
+        <div class="win" style="width:560px;">
+          <div class="tag"><div class="t">图片识别翻译</div><div class="s">截图框选</div></div>
+          <div class="acts"><div class="b">◎</div><div class="b">✕</div></div>
+          <div class="body">
+            <div class="row"><span class="hint teal grow">位图仅存内存，不落盘、不上传</span></div>
+            <div class="pane ph">框选区域预览</div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;">
+                <span class="lang">识别原文</span>
+                <div class="pane">OFFLINE
+TRANSLATION
+keeps data on this device</div>
+              </div>
+              <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:6px;">
+                <span class="lang">中文译文</span>
+                <div class="pane out">离线翻译
+让数据留在本机</div>
+              </div>
+            </div>
+          </div>
+          <div class="foot">
+            <span class="hint teal">🔒 本地离线 · 框选不清可重选</span><span class="grow"></span>
+            <button class="copy" data-copy="离线翻译 让数据留在本机">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg><span>复制译文</span>
+            </button>
+          </div>
+        </div>
+        <div class="cap"><b>图片识别翻译窗</b> · 顶部只留「重新框选 / 关闭」，复制同样下沉右下。</div>
+      </div>
+
+      <!-- 设置 -->
+      <div class="col">
+        <div class="win" style="width:400px;">
+          <div class="tag"><div class="t">设置</div><div class="s">偏好与本地引擎</div></div>
+          <div class="acts"><div class="b">✕</div></div>
+          <div class="body">
+            <div class="group"><div class="gt">划词与监听</div>
+              <div class="field"><span>启用划词 / 截图监听</span><div class="switch"><i></i></div></div>
+              <div class="field"><span>触发模式</span><select><option>两者皆可（推荐）</option></select></div>
+              <div class="field"><span>取词失败时提示</span><div class="switch"><i></i></div></div>
+            </div>
+            <div class="group"><div class="gt">外观与本地引擎</div>
+              <div class="field"><span>主题</span><select><option>浅色</option></select></div>
+              <div class="field"><span>本地 GGUF 权重</span><input value="安装目录内置"></div>
+            </div>
+            <div class="row"><span class="hint">引擎状态：已就绪</span></div>
+          </div>
+          <div class="foot">
+            <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+            <span class="grow"></span>
+            <button class="btn pri">保存设置</button>
+          </div>
+        </div>
+        <div class="cap"><b>设置</b> · 底栏结构与「关于」页完全一致：左侧可点击签名 + 弹性留白 + 右下角<b>唯一一个朱红主按钮</b>。多余的「关闭」已移除，「保存设置」移到原先「关闭」的位置。新增「取词失败时提示」开关（见第六节诊断）。</div>
+      </div>
+
+      <!-- 关于 -->
+      <div class="col">
+        <div class="win" style="width:400px;">
+          <div class="tag"><div class="t">关于</div><div class="s">π-Lingo</div></div>
+          <div class="acts"><div class="b">✕</div></div>
+          <div class="body">
+            <div style="font-size:17px;font-weight:800;color:var(--red);">π-Lingo 离线翻译 v1.7.3</div>
+            <div class="row"><span class="hint">100% 本地离线 · 数据不出本机</span></div>
+            <div class="pane" style="font-size:11.5px;line-height:1.8;">翻译引擎：Hy-MT2（进程内 CPU 推理，Apache-2.0）
+识别引擎：RapidOCR + ONNX Runtime
+架构：原生窗口，无 HTTP 路由、无端口监听
+三类输入（划词 / 图片识别 / 手动输入）共用一个翻译实例
+许可证：Hy-MT2 / PaddleOCR / RapidOCR → Apache-2.0
+离线守卫：已启用（全部网络连接被阻断）</div>
+          </div>
+          <div class="foot">
+            <span class="sign" data-copy="TheSun_Also_Rises">作者联系方式 · 微信号：TheSun_Also_Rises<span class="ck">· 点击复制</span></span>
+            <span class="grow"></span>
+            <button class="btn pri">关闭</button>
+          </div>
+        </div>
+        <div class="cap"><b>关于</b> · 正文自适应高度，底栏仍是签名左 / 操作右。</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ 悬浮窗诊断 ============ -->
+  <div class="sec">
+    <h2>六、附带诊断：WPS 打开时悬浮窗不触发</h2>
+    <div class="verdict">
+      <div class="lead">根因已定位：默认「选中即译」模式下，剪贴板兜底通道压根没有注册，取词只靠 UI Automation 一条路。</div>
+      <p>① <code>should_register_hooks()</code> 中 <code>clipboard</code> 仅在触发模式为 <code>copy / both</code> 时注册，而默认是 <code>select</code>；<code>decide_capture()</code> 又会直接拒绝 <code>select</code> 模式下的剪贴板来源。于是只剩 UIA 一条通道。</p>
+      <p>② WPS 的文字编辑区是自绘控件，通常不实现 UI Automation 的 <code>TextPattern</code>，读不到选中文本 → 静默返回空；换到浏览器 / 记事本等标准控件又能读到 → 这正好解释「开着 WPS 不行、关掉就能用」以及「偶尔能用」。</p>
+      <p>③ 还有一处放大了问题：<code>capture_selection()</code> 把「不支持取词」的异常吞成了返回值，不会抛出，因此 <code>_on_uia_tick()</code> 里的「连续失败 30 次自动提示改用热键」实际上永远触发不了。用户遇到 WPS 时是<b>完全静默、没有任何提示</b>，按 Ctrl+C 也因为通道未注册而无效。</p>
+      <p><b>修复方向（等你确认布局后一并落地）：</b>默认触发模式改为「两者皆可」并始终注册剪贴板作为兜底；UIA 连续失败时给一次轻提示「该程序不支持直接取词，请选中后按 Ctrl+C」；对 WPS 这类程序自动引导到已有的专属捕获热键；另外补一个「同权限运行」检测（WPS 若以管理员运行，跨完整性级别 UIA 也会失效）。</p>
+    </div>
+  </div>
+
+  <!-- ============ 本版变更与剩余确认 ============ -->
+  <div class="sec">
+    <h2>七、本版变更与剩余确认</h2>
+    <div class="cards">
+      <div class="c"><b>✓ 已确定 · 方案 A</b><span>窗口直接渲染 HTML/CSS，<em>100% 复制设计稿</em>；落地清单见第一节，后续不再做「近似实现」。</span></div>
+      <div class="c"><b>✓ 修订 2 · 设置页底栏</b><span>移除「关闭」，只留<em>一个「保存设置」</em>；位置与关于页「关闭」完全相同（最右下角、朱红主按钮），两页底栏结构一致。第五节可直接对照。</span></div>
+      <div class="c"><b>请确认 ① 单按钮</b><span>设置页现在只靠「保存设置」收尾，关闭窗口用右上角 ×（所有窗体统一保留）。若你希望点保存后自动关闭窗口，我把这个行为一起定下来。</span></div>
+      <div class="c"><b>请确认 ② 其余规范</b><span>第二节折角标签形状与命名表、第三节复制按钮质感、第四节拖宽度的自适应行为，是否符合预期？通过后我就开始按方案 A 落地。</span></div>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function(){
+  var toast = document.getElementById('toast');
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ toast.classList.remove('show'); }, 1600);
+  }
+  function write(txt){
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(txt).catch(function(){});
+    }
+    showToast('已复制：' + (txt.length > 18 ? txt.slice(0,18) + '…' : txt));
+  }
+  document.querySelectorAll('.copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var label = btn.querySelector('span');
+      if (btn.classList.contains('done')) return;
+      write(btn.getAttribute('data-copy') || '');
+      btn.classList.add('done');
+      label.textContent = '已复制';
+      setTimeout(function(){ btn.classList.remove('done'); label.textContent = '复制译文'; }, 1400);
+    });
+  });
+  document.querySelectorAll('.sign').forEach(function(el){
+    el.addEventListener('click', function(){ write(el.getAttribute('data-copy') || ''); });
+  });
+
+  var slider = document.getElementById('slider');
+  var demo = document.getElementById('demo');
+  var val = document.getElementById('val');
+  var mode = document.getElementById('mode');
+  function apply(w){
+    demo.style.maxWidth = w + 'px';
+    val.textContent = w + ' px';
+    mode.textContent = w >= 680 ? '左右双栏（自适应）' : '上下双栏';
+  }
+  slider.addEventListener('input', function(){ apply(parseInt(slider.value, 10)); });
+  document.getElementById('toMax').addEventListener('click', function(){
+    slider.value = '1040'; apply(1040);
+  });
+  apply(420);
+})();
+</script>
+</body>
+</html>

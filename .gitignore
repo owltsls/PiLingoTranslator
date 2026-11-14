@@ -1,0 +1,55 @@
+# ── 模型权重（单文件约 1.13 GB，超 GitHub 100 MB 上限，请走 Release 资产分发）──
+*.gguf
+resources/models/bundled/*
+!resources/models/bundled/README.md
+!resources/models/bundled/LICENSE-Hy-MT2.txt
+
+# ── 开发态依赖注入目录（体积巨大，由 requirements.txt 重建）──
+.vendor/
+.vendor-*/
+vendor/
+
+# ── 构建产物（build/ 下的源码脚本必须保留，只忽略产物）──
+build/staging/
+build/staging_old_*/
+build/dist/
+build/manifest_report.json
+build/reports/
+dist/
+dist_installer/
+build_old_*/
+dist_old_*/
+build/build/
+# PyInstaller 工作目录（exe / pkg / PYZ，约 38 MB）
+build/PiLingoTranslator/
+build/PiLingoTranslator_old_*/
+# 内置 Inno Setup 编译器（第三方，约 28 MB）；构建时自行安装 Inno Setup 6
+# 如需连同编译器一起分发，请改为从官方下载，不要提交到仓库
+tools/inno/
+
+# ── 历史归档（体积巨大，不入库）──
+_archive_*/
+
+# ── 运行时沙箱、本地配置与日志 ──
+.sandbox/
+*.log
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+venv/
+.venv/
+
+# ── 编辑器 / 系统 ──
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

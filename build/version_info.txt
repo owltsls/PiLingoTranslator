@@ -1,0 +1,36 @@
+# -*- coding: utf-8 -*-
+# π-Lingo 离线翻译 · Windows 可执行文件版本资源
+# 作者联系方式 · 微信号：TheSun_Also_Rises
+VSVersionInfo(
+  ffi=FixedFileInfo(
+    filevers=(1, 7, 3, 0),
+    prodvers=(1, 7, 3, 0),
+    mask=0x3f,
+    flags=0x0,
+    OS=0x40004,
+    fileType=0x1,
+    subtype=0x0,
+    date=(0, 0)
+  ),
+  kids=[
+    StringFileInfo(
+      [
+        StringTable(
+          '040904B0',
+          [
+            StringStruct('CompanyName', '作者 · 微信号 TheSun_Also_Rises'),
+            StringStruct('FileDescription', 'π-Lingo 离线翻译 · 完全本地离线桌面翻译工具'),
+            StringStruct('FileVersion', '1.7.3.0'),
+            StringStruct('InternalName', 'PiLingoTranslator'),
+            StringStruct('LegalCopyright', '作者联系方式 · 微信号：TheSun_Also_Rises | Hy-MT2 Apache-2.0 | RapidOCR Apache-2.0'),
+            StringStruct('OriginalFilename', 'PiLingoTranslator.exe'),
+            StringStruct('ProductName', 'π-Lingo 离线翻译（独立版）'),
+            StringStruct('ProductVersion', '1.7.3'),
+            StringStruct('Comments', '100% 本地离线；零出站；作者联系方式 · 微信号：TheSun_Also_Rises')
+          ]
+        )
+      ]
+    ),
+    VarFileInfo([VarStruct('Translation', [1033, 1200])])
+  ]
+)
