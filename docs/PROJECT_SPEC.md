@@ -1,8 +1,8 @@
-# π-Lingo 离线翻译 · 项目说明书（供确认稿）
+# π-Lingo 离线翻译 · 项目说明书
 
-> 版本：v1.7.3 ｜ 类型：Windows 桌面工具（PySide6 原生 Qt） ｜ 生成方式：从工程源码逐个模块核对后撰写
+> 版本：v1.7.3 ｜ 类型：Windows 桌面工具（PySide6 原生 Qt） ｜ 平台：Windows 10 / 11 x64
 >
-> **本文件是给你审阅的草稿**，所有数值均取自真实代码（`app/translator.py`、`app/ocr.py`、`app/config.py`、`app/text_logic.py`、`build/setup.iss`）。确认后我再据此生成正式版 README 与 GitHub 页面文案。
+> 本文所有参数均取自真实代码（`app/translator.py`、`app/ocr.py`、`app/config.py`、`app/text_logic.py`、`build/setup.iss`），与软件当前行为保持一致。模型权重不随仓库分发，获取与放置方式见 [`MODELS.md`](MODELS.md)。
 
 ---
 
@@ -230,8 +230,12 @@ python build/build_installer.py                  # 出安装包
 
 ---
 
-## 八、待你确认的三点
+## 八、相关文档
 
-1. 上面「已知限制」是否要全部公开（建议保留，能显著降低售后沟通成本）；
-2. 是否在 README 顶部加一张界面截图（`preview/shots/` 里有现成图，需要我做脱敏裁切）；
-3. 作者联系方式保持「微信 + GitHub Issues」双通道，还是只留 Issues。
+| 文档 | 内容 |
+| --- | --- |
+| [`README.md`](../README.md) | 面向使用者的总览：特性、安装、使用、构建 |
+| [`docs/MODELS.md`](MODELS.md) | 模型下载地址、放置位置、校验方式、查找优先级 |
+| [`THIRD_PARTY_NOTICES.md`](../THIRD_PARTY_NOTICES.md) | 第三方组件清单与必须履行的许可证义务 |
+| [`licenses/`](../licenses/) | 6 份上游许可证原文 + NOTICE |
+| [`NOTICE.txt`](../NOTICE.txt) | 版权归属、量化改动说明、商标声明 |

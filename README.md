@@ -25,6 +25,7 @@
 - [技术架构](#技术架构)
 - [目录结构](#目录结构)
 - [构建安装包](#构建安装包)
+- [详细文档](#详细文档)
 - [许可证](#许可证)
 - [免责声明](#免责声明)
 - [致谢](#致谢)
@@ -196,6 +197,7 @@ PiLingoTranslator/
 ├── tests/                       unittest 逻辑与 UI 冒烟测试
 ├── build/                       PyInstaller spec、Inno Setup、版本资源、构建脚本
 ├── resources/models/            本地权重目录（权重不入库）
+├── docs/                        项目说明书、模型获取说明
 ├── licenses/                    许可证原文与 NOTICE
 ├── LICENSE                      自有代码 Apache-2.0
 ├── NOTICE.txt                   第三方组件归属与修改说明
@@ -229,6 +231,17 @@ dist_installer/PiLingoTranslator_Setup_v1.7.3.exe
 ```
 
 构建脚本会校验关键文件、模型权重与资源完整性，任何缺失都会中止打包。
+
+---
+
+## 详细文档
+
+| 文档 | 内容 |
+| --- | --- |
+| [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) | 完整项目说明书：核心功能、推理参数、文本处理、OCR、`settings.json` 全字段、模型查找优先级、CLI、最小窗口尺寸、已知限制 |
+| [`docs/MODELS.md`](docs/MODELS.md) | 模型不随仓库分发的原因、官方与镜像下载地址、放置目录、字节数校验、`--model-info` 自检 |
+| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | 第三方组件清单、各自许可证与必须履行的义务 |
+| [`licenses/`](licenses/) | 6 份上游许可证原文与 NOTICE 归档 |
 
 ---
 
